@@ -5,7 +5,7 @@ import XCTest
 
 final class UT_SpyableMacro: XCTestCase {
     private let sut = ["Spyable": SpyableMacro.self]
-    
+
     func testMacro() {
         let protocolDeclaration = """
         public protocol ServiceProtocol {
@@ -124,6 +124,31 @@ final class UT_SpyableMacro: XCTestCase {
                     }
                 }
             }
+            """,
+            macros: sut
+        )
+    }
+
+    func testMacroWithFlag() {
+        let protocolDeclaration = """
+        public protocol ServiceProtocol {
+            var variable: Bool? { get set }
+        }
+        """
+        assertMacroExpansion(
+            """
+            @Spyable(flag: "CUSTOM")
+            \(protocolDeclaration)
+            """,
+            expandedSource: """
+
+            \(protocolDeclaration)
+
+            #if CUSTOM
+            class ServiceProtocolSpy: ServiceProtocol {
+                var variable: Bool?
+            }
+            #endif
             """,
             macros: sut
         )
